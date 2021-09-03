@@ -32,7 +32,7 @@ from typing import (
     Union,
 )
 
-from flask import current_app, g
+from flask import current_app, g, request, session, url_for
 from flask_appbuilder import Model
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.security.sqla.manager import SecurityManager
@@ -51,7 +51,7 @@ from flask_appbuilder.security.views import (
     ViewMenuModelView,
 )
 from flask_appbuilder.widgets import ListWidget
-from flask_login import AnonymousUserMixin
+from flask_login import AnonymousUserMixin, current_user
 from sqlalchemy import and_, or_
 from sqlalchemy.engine.base import Connection
 from sqlalchemy.orm import Session
@@ -220,6 +220,13 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         "all_database_access",
         "all_query_access",
     )
+
+    def has_access(self, permission_name, view_name):
+        if not current_user.is_authenticated:
+            login_path = url_for(self.appbuilder.sm.auth_view.__class__.__name__ + ".login")
+            if not ('target_url' in session) and request.path != login_path:
+                session['target_url'] = request.url
+        return super(SupersetSecurityManager, self).has_access(permission_name, view_name)
 
     def get_schema_perm(  # pylint: disable=no-self-use
         self, database: Union["Database", str], schema: Optional[str] = None

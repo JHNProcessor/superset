@@ -143,6 +143,7 @@ from superset.views.utils import (
     is_owner,
 )
 from superset.viz import BaseViz
+from superset.superset_decorators import redirect_to_target_url
 
 config = app.config
 SQLLAB_QUERY_COST_ESTIMATE_TIMEOUT = config["SQLLAB_QUERY_COST_ESTIMATE_TIMEOUT"]
@@ -2961,6 +2962,7 @@ class Superset(BaseSupersetView):  # pylint: disable=too-many-public-methods
         )
 
     @event_logger.log_this
+    @redirect_to_target_url
     @expose("/welcome/")
     def welcome(self) -> FlaskResponse:
         """Personalized welcome page"""
